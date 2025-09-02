@@ -19,7 +19,7 @@ const uint64_t pipeOut = 0xABCDABCD71LL;
 
 int led = LED_BUILTIN;
 
-uint16_t loopcounter = 0;
+uint16_t loopcounter0 = 0;
 uint16_t loopcounter1 = 0;
 uint8_t blinkcounter = 0;
 uint8_t impulscounter = 0;
@@ -39,7 +39,7 @@ uint8_t         expowert = 0;
 uint16_t        potwert = 0;
 uint8_t         expowertarray[NUM_SERVOS] = {}; // expowert pro Servo
 uint16_t          potwertarray[NUM_SERVOS] = {}; // Werte fuer Mitte
-
+uint8_t       levelwertarray[NUM_SERVOS] = {}; // leelwert pro servo
 uint16_t      blink_cursorpos=0xFFFF;
 
 // statusvariablen
@@ -69,6 +69,7 @@ uint16_t expoint = 0;
 uint16_t levelint = 0;
 uint16_t intdiff = 0;
 
+uint8_t levelintcheck = 0;
 
 
 // Batterie
@@ -452,17 +453,17 @@ void tastenfunktion(uint16_t Tastenwert)
    tastaturcounter++;   
    if (Tastenwert>10) // ca Minimalwert der Matrix
    {      
-      //Serial.print(Tastenwert);
+      Serial.print(Tastenwert);
       //Serial.print("\t");
       //Serial.print(tastaturcounter);
       
-      //Serial.print("\n");
+      Serial.print("\n");
       
       if (tastaturcounter>=400)   //   Prellen
       {        
          
          tastaturcounter=0x00;
-         //Serial.println("Taste down");
+         Serial.println("Taste down");
          if (!(tastaturstatus & (1<<TASTE_OK))) // Taste noch nicht gedrueckt
          {
             
@@ -557,6 +558,84 @@ void setModus(void)
    }// switch curr_steuerstatus
 }
 
+int Throttle_Map255(int val, int fromlow, int fromhigh,int tolow, int tohigh, bool reverse)
+{
+   val = constrain(val, fromlow, fromhigh);
+   val = map(val, fromlow,fromhigh, tolow, tohigh);
+
+   uint8_t levelwerta = levelwertarray[THROTTLE] & 0x07;
+   uint8_t levelwertb = (levelwertarray[THROTTLE] & 0x70)>>4;
+
+   uint8_t expowerta = expowertarray[THROTTLE] & 0x07;
+
+   uint16_t expoint = 3;
+   uint16_t levelint = 0;
+
+   expoint = expoarray8[expowerta][val];
+   levelint = expoint * (8-levelwerta);
+   levelint /= 4;
+
+
+
+   return ( reverse ? 255 - levelint : levelint );
+}
+
+
+int Border_Mapvar255(uint8_t servo, int val, int lower, int middle, int upper, bool reverse)
+{
+   val = constrain(val, lower, upper); // Grenzen einhalten
+   uint8_t levelwerta = levelwertarray[servo] & 0x07;
+   uint8_t levelwertb = (levelwertarray[servo] & 0x70)>>4;
+
+   uint8_t expowerta = expowertarray[servo] & 0x07;
+   uint8_t expowertb = (expowertarray[servo] & 0x70)>>4;
+  
+  //levelwerta = 0;
+  //levelwertb = 0;
+  //expowerta = 0;
+  //expowertb = 0;
+  
+   if ( val < middle )
+   {
+      
+      val = map(val, lower, middle, 0, 127); // normieren auf 0-127
+      //intdiff = val;
+      intdiff =  (127 - val);// Abweichung von mitte, 
+      //levelintraw = intdiff;
+      //diffa = map(intdiff,0,(middle - lower), 0,512);
+      diffa = intdiff;
+      
+      expoint = expoarray8[expowerta][diffa];
+      levelint = expoint * (8-levelwerta);
+      levelint /= 8;
+      levelintcheck = 127 + levelint;
+      levelint = 127 + levelint;
+   }  
+   else
+   {
+      val = map(val, middle, upper, 128, 255); // normieren auf 128 - 255
+      //intdiff = val;
+      
+      intdiff =  (val - 127);// Abweichung von mitte, 
+      //diffb = map(intdiff,0,(upper - middle),0,512);
+      diffb = intdiff;
+      if(diffb >= 127 )
+      {
+         diffb = 127;
+      }
+      expoint = expoarray8[expowertb][diffb];
+      levelint = expoint * (8-levelwertb) ;     
+      levelint /= 8;
+      levelintcheck= 127 - levelint;
+      levelint= 127 - levelint;
+   }
+   
+   return ( reverse ? 255 - levelint : levelint );
+}
+
+
+
+
 
 
 // the setup routine runs once when you press reset:
@@ -566,18 +645,69 @@ void setup()
   Serial.begin(9600);
   delay(100);
   // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);
+  pinMode(LOOPLED, OUTPUT);
+  pinMode(PRINTLED, OUTPUT);
 
+// PPM decode
+   pinMode(PPM_PIN, INPUT);
+   attachInterrupt(digitalPinToInterrupt(PPM_PIN), ppmISR, RISING);
+   
+   curr_steuerstatus = MODELL;
 
-}
+      Serial.println(__DATE__);
+   Serial.println(__TIME__);
+printeeprom(160);
+   
+   eepromread();
+   pinMode(BUZZPIN,OUTPUT);
+  pinMode(BATT_PIN,INPUT);
+   
+   pinMode(TASTATUR_PIN,INPUT);
+   
+   
+   //pinMode(EEPROMTASTE,INPUT_PULLUP);
+   eepromtaste.attach( EEPROMTASTE ,  INPUT_PULLUP ); 
+   eepromtaste.interval(5);
+   eepromtaste.setPressedState(LOW);
+   
+
+  oled_vertikalbalken(BATTX,BATTY,BATTB,BATTH);
+setHomeScreen();
+u8g2.sendBuffer(); 
+
+} // end setup
 
 // the loop routine runs over and over again forever:
 void loop() 
 {
-  loopcounter++;
-  Serial.println(loopcounter);
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(1000);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(1000);               // wait for a second
+  tastaturwert = analogRead(TASTATUR_PIN);
+  tastenfunktion(tastaturwert);
+  loopcounter0++;
+
+
+
+
+
+  
+  if(loopcounter0 >= BLINKRATE)
+   {
+      loopcounter0 = 0;
+      loopcounter1++;
+      if(loopcounter1 > BLINKRATE)
+      {
+        loopcounter1 = 0;
+        //Serial.println(loopcounter0);
+    
+        blinkcounter++;
+        impulscounter+=16;
+        //digitalWrite(LOOPLED, ! digitalRead(LOOPLED));
+        digitalWrite(PRINTLED, ! digitalRead(PRINTLED));
+
+      }// loopcounter1
+   } // if loopcount0
+
+  //digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+  //delay(1000);               // wait for a second
+  //digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+  //delay(1000);               // wait for a second
 }

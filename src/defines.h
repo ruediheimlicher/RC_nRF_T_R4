@@ -6,9 +6,12 @@
 //
 //
 
-#ifndef DEFINES_h
-#define DEFINES_h
+#ifndef DEFINES_H
+#define DEFINES_H
 
+#define LOOPLED LED_BUILTIN
+#define PRINTLED     4 // Board nRF_T_nano2
+#define BLINKRATE 0x04FA
 
 #define TEST 0
 #define CE_PIN 9
@@ -37,7 +40,7 @@
 #define THROTTLE_PIN  A0  
 
 #define BATT_PIN         A2
-
+#define BUZZPIN 6
 
 #define MINDIFF 4
 
