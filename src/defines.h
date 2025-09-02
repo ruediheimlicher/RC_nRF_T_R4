@@ -27,6 +27,28 @@
 #define EEPROMLEVELSETTINGS  0x40
 #define EEPROMEXPOSETTINGS  0x48
 
+// defines for PINS
+// links
+#define PITCH_PIN     A6
+#define YAW_PIN       A3
+
+// rechts
+#define ROLL_PIN      A1
+#define THROTTLE_PIN  A0  
+
+#define BATT_PIN         A2
+
+
+#define MINDIFF 4
+
+
+
+// Tastatur
+#define TASTATUR_PIN A7
+#define TASTE_OFF  0
+#define TASTE_ON  1
+
+// Display
 #define HOMESCREEN      0
 #define MODELLSCREEN    1 // SYMPEL, TROTTLE ...
 #define FUNKTIONSCREEN  2 // YAW,PITCH ...
@@ -48,6 +70,16 @@
 
 #define arrow_width 16
 #define arrow_height 16
+
+// balken
+#define VBX   64
+#define VBY    12
+#define HBX    6
+#define HBY    54
+
+
+
+
 /*
 static unsigned char pfeil_l[] = {
    0b1,
