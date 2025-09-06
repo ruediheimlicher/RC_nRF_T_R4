@@ -61,10 +61,14 @@ uint16_t motorsekunde=0;
 uint16_t motorminute=0;
 uint8_t motorstunde=0;
 
+
 uint16_t sendesekunde=0;
 uint16_t sendeminute=0;
 uint8_t sendestunde=0;
 uint8_t           sekundencounter = 0;
+uint16_t throttlecounter = 0;
+uint16_t throttlesekunden = 0;
+
 elapsedMillis   zeitintervall;
 elapsedMillis   sinceLastBlink = 0;
 
@@ -753,16 +757,27 @@ void setup()
       //uint8_t n = i*i+1;
       //EEPROM.write(i,0 );
       
+   }// for NUM_SERVOS
+
+   Serial.print("\n"); 
+   Serial.print("adcpinarray, adcpinarray, \n");
+   for (uint8_t i=0;i<NUM_SERVOS;i++)
+   {
+      Serial.print(adcpinarray[i]);
+      Serial.print("\t");
+      Serial.print(servomittearray[i]);
+      Serial.print("\t");
+      
+      //kanalsettingarray[0][i][1] = 0x11; // level
+      //kanalsettingarray[0][i][2] = 0x33; // expo
    }
-
-
-
-
-  
    
-   
+   Serial.print("\n");
+
 
 } // end setup
+
+
 
 // the loop routine runs over and over again forever:
 void loop() 
@@ -788,11 +803,40 @@ void loop()
       tastenfunktion(tastaturwert);
    }
 
-
-    
-
-
   }// if %64
+
+   if (zeitintervall > 500) 
+   { 
+      zeitintervall = 0;
+      
+      sekundencounter++;
+      if (sekundencounter%2)
+      {
+         throttlecounter += (data.throttle);
+         throttlesekunden = throttlecounter >> 8;
+         blinkstatus = 1;
+
+         stopsekunde++;
+         if(stopsekunde == 60)
+         {
+            stopsekunde = 0;
+            stopminute++;
+         }
+         refreshScreen();
+
+      }
+      else
+      {
+         blinkstatus = 0;
+      }
+      if(curr_screen == 5)
+      {
+         updateModusScreen();
+         u8g2.sendBuffer();
+      }
+      
+   }  
+
 
   if (tastaturstatus & (1<<TASTE_OK) && Taste) // Menu ansteuern
    {
@@ -1599,7 +1643,26 @@ void loop()
         digitalWrite(PRINTLED, ! digitalRead(PRINTLED));
 
          // Batterie
-       
+          batteriespannung = analogRead(BATT_PIN);
+      batteriearray[batteriemittelwertcounter] = batteriespannung;
+      batteriemittelwertcounter++;
+      batteriemittelwertcounter &= 0x07;
+      batteriemittel = 0;
+      for(uint8_t i=0;i<8;i++)
+      {
+         batteriemittel += batteriearray[i];
+      }
+      batteriemittel /= 8;
+      //Serial.println(batteriemittel);
+      batterieanzeige = (0x50*batteriespannung)/0x6B/8; // resp. /107
+      
+      UBatt = float(batteriespannung) / 107;
+
+        if(curr_screen == 0)
+      {
+         updateHomeScreen();
+         u8g2.sendBuffer();
+      }
       
       }// loopcounter1
    } // if loopcount0
