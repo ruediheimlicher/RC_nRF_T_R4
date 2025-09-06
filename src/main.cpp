@@ -44,6 +44,10 @@ uint16_t          potwertarray[NUM_SERVOS] = {}; // Werte fuer Mitte
 uint8_t       levelwertarray[NUM_SERVOS] = {}; // leelwert pro servo
 uint16_t      blink_cursorpos=0xFFFF;
 
+
+RF24 radio(CE_PIN, CSN_PIN);
+
+
 // statusvariablen
 uint8_t blinkstatus = 0;
 uint8_t curr_steuerstatus = 0;
@@ -158,6 +162,7 @@ volatile unsigned long pulseLength = 0;
 volatile byte channel = 0;
 const byte maxChannels = 8;
 volatile unsigned int ppmValues[maxChannels];
+
 void ppmISR() 
 {
   unsigned long now = micros();
@@ -690,12 +695,72 @@ void setup()
   initDisplay();
   delay(100);
 
-  //oled_vertikalbalken(BATTX,BATTY,BATTB,BATTH);
+  oled_vertikalbalken(BATTX,BATTY,BATTB,BATTH);
   delay(100);
   setHomeScreen();
   u8g2.sendBuffer(); 
   Serial.println("nach setup");
 
+// Radio
+   radio.begin();
+   radio.openWritingPipe(pipeOut);
+   radio.setChannel(124);
+   radio.setAutoAck(false);
+   //radio.setDataRate(RF24_250KBPS);    // The lowest data rate value for more stable communication  | Daha kararlı iletişim için en düşük veri hızı.
+   radio.setDataRate(RF24_2MBPS); // Set the speed of the transmission to the quickest available
+   
+   
+   radio.setPALevel(RF24_PA_MAX);      // Output power is set for maximum range  |  Çıkış gücü maksimum menzil için ayarlanıyor.
+   
+   radio.setPALevel(RF24_PA_MIN); 
+   radio.setPALevel(RF24_PA_MAX); 
+   
+   radio.stopListening();              // Start the radio comunication for Transmitter | Verici için sinyal iletişimini başlatır.
+   if (radio.failureDetected) 
+   {
+      radio.failureDetected = false;
+      delay(250);
+      Serial.println("Radio failure detected, restarting radio");
+   }
+   else
+   {
+      Serial.println("Radio OK");
+   }
+   ResetData();
+
+   Serial.print("servomitte\n");
+   for (uint8_t i=0;i<NUM_SERVOS;i++)
+   {
+      uint16_t wert = 500 + i * 50;
+      wert = 750;
+      impulstimearray[i] = wert; // mittelwert
+      
+      //potgrenzearray[i][0] = potlo;
+      //potgrenzearray[i][1] = pothi;
+      
+      servomittearray[i] = analogRead(adcpinarray[i]);
+      Serial.print("i:\t");
+      Serial.print(i);
+      Serial.print("\t");
+      Serial.print(servomittearray[i]);
+      Serial.print("\t lo: ");
+      Serial.print(servomittearray[i] & 0x00FF);
+      Serial.print("\t hi: ");
+      Serial.print((servomittearray[i]& 0xFF00) >> 8);
+      Serial.print("\n");
+      
+      
+      //uint8_t n = i*i+1;
+      //EEPROM.write(i,0 );
+      
+   }
+
+
+
+
+  
+   
+   
 
 } // end setup
 
@@ -1522,13 +1587,6 @@ void loop()
         //Serial.print(tastendelaycounter);
         
         //tastenfunktion(tastaturwert);
-        if(Taste)
-        {
-         Serial.print(" Taste: ");
-        Serial.print(Taste);
-        Serial.print("\n");
-
-        }
         
         //Serial.println(blinkcounter);
         // Taste = 0;
@@ -1540,8 +1598,17 @@ void loop()
         digitalWrite(LOOPLED, ! digitalRead(LOOPLED));
         digitalWrite(PRINTLED, ! digitalRead(PRINTLED));
 
+         // Batterie
+       
+      
       }// loopcounter1
    } // if loopcount0
+
+
+
+   radiocounter++;
+   
+
 
   //digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
   //delay(1000);               // wait for a second
