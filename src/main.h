@@ -68,6 +68,10 @@ struct Signal
 #define T5_WAIT              4 // Warten auf 3 Impulse
 #define MENU_ON            5
 
+#define TASTATUR_WAIT      6 // delay
+#define TASTENDELAY        0x0FFF
+/*
+// nano_every
 #define JOYSTICKTASTE1 70
 #define JOYSTICKTASTE2 121
 #define JOYSTICKTASTE3 192
@@ -77,6 +81,17 @@ struct Signal
 #define JOYSTICKTASTE7 426
 #define JOYSTICKTASTE8 510
 #define JOYSTICKTASTE9 580
+*/
+
+#define JOYSTICKTASTE1  68
+#define JOYSTICKTASTE2  114
+#define JOYSTICKTASTE3  178
+#define JOYSTICKTASTE4  228
+#define JOYSTICKTASTE5  285
+#define JOYSTICKTASTE6  341
+#define JOYSTICKTASTE7  396
+#define JOYSTICKTASTE8  474
+#define JOYSTICKTASTE9  542
 
 #define TAB0    2
 #define TAB1    4

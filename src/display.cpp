@@ -116,7 +116,6 @@ U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/U8X8_PIN_NONE);
 void initDisplay()
 {
   u8g2.begin();
-  uint8_t c = 0;
 }
 
  void oled_fill(uint8_t x,uint8_t y,uint8_t l)
@@ -155,8 +154,6 @@ void oled_frame(uint8_t x,uint8_t y,uint8_t l)
 void oled_vertikalbalken(uint8_t x,uint8_t y, uint8_t b, uint8_t h)
 {
    u8g2.drawFrame(x,y,b,h);
-
-
 }
 
 void oled_vertikalbalken_setwert(uint8_t x,uint8_t y, uint8_t b, uint8_t h,uint8_t wert)
