@@ -323,7 +323,7 @@ void updateHomeScreen()
      // u8g2.setCursor(36,30);
      // u8g2.print(data.pitch);
       sprintf(buf0, "%3d", data.pitch);
-      u8g2.drawStr(32,30,buf0);
+      u8g2.drawStr(30,30,buf0);
 
       // Roll
       //u8g2.setCursor(4,46);
@@ -335,7 +335,7 @@ void updateHomeScreen()
       //u8g2.setCursor(36,46);
       //u8g2.print(data.throttle);
       sprintf(buf0, "%3d", data.throttle);
-      u8g2.drawStr(32,42,buf0);
+      u8g2.drawStr(30,42,buf0);
      
       uint8_t p = curr_model;
    oled_batteriebalken_setwert(BATTX,BATTY,BATTB,BATTH,batterieanzeige);
@@ -351,7 +351,7 @@ void updateHomeScreen()
 
 
    u8g2.setCursor(44,56);
-   u8g2.print(kanalsettingarray[0][0][2]);
+   //u8g2.print(kanalsettingarray[0][0][2]);
 }
 
 void setMenuScreen()
@@ -827,16 +827,19 @@ void refreshScreen(void)
    {
       case 0:
       {
+         u8g2.setDrawColor(0);
+         u8g2.drawFrame(54,3,41,12);
+         u8g2.setDrawColor(1);
          char buf[6];
          sprintf(buf, "%2d:%2d",stopminute,stopsekunde);
-         u8g2.drawStr(54,12,buf);
+         u8g2.drawStr(54,14,buf);
 
-         u8g2.setCursor(64,24);
-         u8g2.print(throttlecounter);
+         u8g2.setCursor(62,28);
+         //u8g2.print(throttlecounter);
 
          //sprintf(buf,"%1.0F", throttlesekunden);
 
-         u8g2.setCursor(64,48);
+         u8g2.setCursor(62,44);
          u8g2.print(throttlesekunden);
          //u8g2.setFont(u8g2_font_inb24_mr);
          //u8g2.drawStr(64,42,buf);

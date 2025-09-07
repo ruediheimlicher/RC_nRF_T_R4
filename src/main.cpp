@@ -169,17 +169,17 @@ volatile unsigned int ppmValues[maxChannels];
 
 void ppmISR() 
 {
-  unsigned long now = micros();
-  pulseLength = now - lastTime;
-  lastTime = now;
-
-  if (pulseLength > 3000) {
-    // Sync-Pause erkannt: neues Frame beginnt
-    channel = 0;
-  } else if (channel < maxChannels) {
-    ppmValues[channel] = pulseLength;
-    channel++;
-  }
+   unsigned long now = micros();
+   pulseLength = now - lastTime;
+   lastTime = now;
+   
+   if (pulseLength > 3000) {
+      // Sync-Pause erkannt: neues Frame beginnt
+      channel = 0;
+   } else if (channel < maxChannels) {
+      ppmValues[channel] = pulseLength;
+      channel++;
+   }
 }
 
 void printgrenzen()
@@ -232,7 +232,7 @@ void printeeprom(uint8_t zeilen)
       }
       
    }
-      Serial.print("\n");
+   Serial.print("\n");
    uint8_t eepromyawlo = EEPROM.read(2*(0 + EEPROMINDEX_U));
    uint8_t eepromyawhi = EEPROM.read(2*(0 + EEPROMINDEX_U)+1);
    uint16_t eepromyaw = (eepromyawhi << 8) | eepromyawlo;
@@ -311,8 +311,8 @@ void eepromread()
          Serial.print("\t");
          Serial.print("expo\t");
          Serial.println(eh);
-
- 
+         
+         
       }
       
       
@@ -489,13 +489,13 @@ void tastenfunktion(uint16_t Tastenwert)
             tastaturstatus |= (1<<TASTE_OK); // nur einmal   
             tastaturstatus |= (1<<TASTATUR_WAIT); // Warten
             tastendelaycounter = TASTENDELAY;
-
+            
             Taste= Joystick_Tastenwahl(Tastenwert);
             Serial.print("\ntastenfunktion Tastenwert: ");
             Serial.print(Tastenwert);
             Serial.print("\t Taste: ");
             Serial.println(Taste);
-
+            
             tastaturstatus |= (1<<AKTION_OK);
             if(OLED && Taste) // Taste und Tastenwert anzeigen
             {
@@ -539,7 +539,7 @@ void tastenfunktion(uint16_t Tastenwert)
       
       
    }// if tastenwert
-
+   
    //else 
    {
       //tastaturwert = 0;
@@ -549,7 +549,7 @@ void tastenfunktion(uint16_t Tastenwert)
          //tastaturstatus &= ~(1<<TASTE_OK);
       }
    }
-      
+   
 }//tastenfunktion
 
 void setModus(void)
@@ -575,10 +575,10 @@ void setModus(void)
             kanalsettingarray[0][i][2] = 0x00; // expo
          }
       }break;
-
+         
       case CALIB:
       {
-
+         
       }break;
    }// switch curr_steuerstatus
 }
@@ -587,21 +587,21 @@ int Throttle_Map255(int val, int fromlow, int fromhigh,int tolow, int tohigh, bo
 {
    val = constrain(val, fromlow, fromhigh);
    val = map(val, fromlow,fromhigh, tolow, tohigh);
-
+   
    uint8_t levelwerta = levelwertarray[THROTTLE] & 0x07;
    uint8_t levelwertb = (levelwertarray[THROTTLE] & 0x70)>>4;
-
+   
    uint8_t expowerta = expowertarray[THROTTLE] & 0x07;
-
+   
    uint16_t expoint = 3;
    uint16_t levelint = 0;
-
+   
    expoint = expoarray8[expowerta][val];
    levelint = expoint * (8-levelwerta);
    levelint /= 4;
-
-
-
+   
+   
+   
    return ( reverse ? 255 - levelint : levelint );
 }
 
@@ -611,15 +611,15 @@ int Border_Mapvar255(uint8_t servo, int val, int lower, int middle, int upper, b
    val = constrain(val, lower, upper); // Grenzen einhalten
    uint8_t levelwerta = levelwertarray[servo] & 0x07;
    uint8_t levelwertb = (levelwertarray[servo] & 0x70)>>4;
-
+   
    uint8_t expowerta = expowertarray[servo] & 0x07;
    uint8_t expowertb = (expowertarray[servo] & 0x70)>>4;
-  
-  //levelwerta = 0;
-  //levelwertb = 0;
-  //expowerta = 0;
-  //expowertb = 0;
-  
+   
+   //levelwerta = 0;
+   //levelwertb = 0;
+   //expowerta = 0;
+   //expowertb = 0;
+   
    if ( val < middle )
    {
       
@@ -667,27 +667,28 @@ int Border_Mapvar255(uint8_t servo, int val, int lower, int middle, int upper, b
 void setup()
 
 {
-  Serial.begin(9600);
-  delay(100);
-  // initialize the digital pin as an output.
-  pinMode(LOOPLED, OUTPUT);
-  pinMode(PRINTLED, OUTPUT);
-
-  // PPM decode
+   Serial.begin(9600);
+   delay(100);
+   // initialize the digital pin as an output.
+   pinMode(LOOPLED, OUTPUT);
+   pinMode(PRINTLED, OUTPUT);
+   
+   // PPM decode
    pinMode(PPM_PIN, INPUT);
    attachInterrupt(digitalPinToInterrupt(PPM_PIN), ppmISR, RISING);
    
    curr_steuerstatus = MODELL;
+   
+   Serial.println(__DATE__);
+   Serial.println(__TIME__);
+   printeeprom(160);
+   
+   //eepromread();
 
-  Serial.println(__DATE__);
-  Serial.println(__TIME__);
-  printeeprom(160);
+   pinMode(BUZZPIN,OUTPUT);
+   pinMode(BATT_PIN,INPUT);
    
-  eepromread();
-  pinMode(BUZZPIN,OUTPUT);
-  pinMode(BATT_PIN,INPUT);
-   
-  pinMode(TASTATUR_PIN,INPUT);
+   pinMode(TASTATUR_PIN,INPUT);
    
    
    //pinMode(EEPROMTASTE,INPUT_PULLUP);
@@ -695,17 +696,17 @@ void setup()
    eepromtaste.interval(5);
    eepromtaste.setPressedState(LOW);
    
-  // Display
-  initDisplay();
-  delay(100);
-
-  oled_vertikalbalken(BATTX,BATTY,BATTB,BATTH);
-  delay(100);
-  setHomeScreen();
-  u8g2.sendBuffer(); 
-  Serial.println("nach setup");
-
-// Radio
+   // Display
+   initDisplay();
+   delay(100);
+   
+   oled_vertikalbalken(BATTX,BATTY,BATTB,BATTH);
+   delay(100);
+   setHomeScreen();
+   u8g2.sendBuffer(); 
+   Serial.println("nach setup");
+   
+   // Radio
    radio.begin();
    radio.openWritingPipe(pipeOut);
    radio.setChannel(124);
@@ -731,7 +732,7 @@ void setup()
       Serial.println("Radio OK");
    }
    ResetData();
-
+   
    Serial.print("servomitte\n");
    for (uint8_t i=0;i<NUM_SERVOS;i++)
    {
@@ -758,7 +759,7 @@ void setup()
       //EEPROM.write(i,0 );
       
    }// for NUM_SERVOS
-
+   
    Serial.print("\n"); 
    Serial.print("adcpinarray, adcpinarray, \n");
    for (uint8_t i=0;i<NUM_SERVOS;i++)
@@ -773,8 +774,9 @@ void setup()
    }
    
    Serial.print("\n");
-
-
+   
+   printgrenzen();
+   
 } // end setup
 
 
@@ -782,29 +784,103 @@ void setup()
 // the loop routine runs over and over again forever:
 void loop() 
 {
-  if((loopcounter0 % 128) == 0)
-  {
-   if(tastaturstatus & (1<<TASTATUR_WAIT)) // noch warten
+   if((loopcounter0 % 128) == 0)
    {
-      if(tastendelaycounter)
+      
+      
+      if(tastaturstatus & (1<<TASTATUR_WAIT)) // noch warten
       {
-         tastendelaycounter--;
-
+         if(tastendelaycounter)
+         {
+            tastendelaycounter--;
+            
+         }
+         else // Tastatur lesen
+         {
+            tastaturstatus &= ~(1<<TASTATUR_WAIT);
+            
+         }
       }
-      else // Tastatur lesen
+      else
       {
-         tastaturstatus &= ~(1<<TASTATUR_WAIT);
+         tastaturwert = analogRead(TASTATUR_PIN);
+         tastenfunktion(tastaturwert);
+      }
+      
+      // pot lesen
+      for (uint8_t i=0;i<NUM_SERVOS;i++)
+      {
+         potwert=analogRead(adcpinarray[i]);
          
-      }
-   }
-   else
-   {
-      tastaturwert = analogRead(TASTATUR_PIN);
-      tastenfunktion(tastaturwert);
-   }
+         //if(calibstatus & (1<<CALIB_START))
+         {
+            
+            
+            if(potwert > potgrenzearray[i][0])
+            {
+               potgrenzearray[i][0] = potwert; // pothi
+               Serial.print(">> pot: ");
+               Serial.print(i);
+               Serial.print("wert: ");
+               Serial.println(potwert);
+            }
+            if(potwert < potgrenzearray[i][1])
+            {
+               potgrenzearray[i][1] = potwert; // potlo
+               Serial.print("<< pot: ");
+               Serial.print(i);
+               Serial.print("wert: ");
+               Serial.println(potwert);
+            }
+         }
+         //potgrenzearray[0][0] = 17;
+         //potgrenzearray[0][1] = 33;
+         
+         uint16_t mitte = servomittearray[i];
+         uint8_t levelwert = kanalsettingarray[curr_model][i][1]; // element 1, levelarray
+         levelwertarray[i] = kanalsettingarray[curr_model][i][1]; 
+         // levelwert   faktor
+         //    0             8/8
+         //    1             7/8
+         //    2             6/8
+         //    3             5/8
+         //    4             4/8
+         
+         // eventuell ungleiche werte 
+         
+         //levelwerta = levelwert & 0x07;
+         //levelwertb = (levelwert & 0x70)>>4;
+         
+         // expowert ev. ungleich fuer richtung
+         expowert = kanalsettingarray[curr_model][i][2]; // element2, expoarray
+         expowertarray[i] = kanalsettingarray[curr_model][i][2];
+         //expowerta = expowert & 0x07;
+         //expowertb = (expowert & 0x70)>>4;
+         
+         
+         
+         // map(value, fromLow, fromHigh, toLow, toHigh)
+         
+         if((i == YAW) || (i == PITCH) || (i == ROLL))
+         {
+            potwertarray[i] = potwert;
+            
+         }
+         else if(i == THROTTLE)
+         {
+            potwertarray[i] = potwert;
+         }
+         
+         
+      } // for i
+      data.yaw = Border_Mapvar255(0, potwertarray[YAW],potgrenzearray[YAW][1],servomittearray[YAW],potgrenzearray[YAW][0],false);
+      data.pitch = Border_Mapvar255(1, potwertarray[PITCH],potgrenzearray[PITCH][1],servomittearray[PITCH],potgrenzearray[PITCH][0],false);
+      data.roll = Border_Mapvar255(2,potwertarray[ROLL],potgrenzearray[ROLL][1],servomittearray[ROLL],potgrenzearray[ROLL][0],false);
+      data.throttle = Throttle_Map255(potwertarray[THROTTLE],servomittearray[THROTTLE], potgrenzearray[THROTTLE][0],10,127, false ); // nur eine haelfte 
 
-  }// if %64
-
+   }// if %64
+   
+   
    if (zeitintervall > 500) 
    { 
       zeitintervall = 0;
@@ -815,7 +891,7 @@ void loop()
          throttlecounter += (data.throttle);
          throttlesekunden = throttlecounter >> 8;
          blinkstatus = 1;
-
+         
          stopsekunde++;
          if(stopsekunde == 60)
          {
@@ -823,7 +899,7 @@ void loop()
             stopminute++;
          }
          refreshScreen();
-
+         
       }
       else
       {
@@ -836,12 +912,12 @@ void loop()
       }
       
    }  
-
-
-  if (tastaturstatus & (1<<TASTE_OK) && Taste) // Menu ansteuern
+   
+   
+   if (tastaturstatus & (1<<TASTE_OK) && Taste) // Menu ansteuern
    {
       //Taste = 0;
-       tastaturcounter = 0;
+      tastaturcounter = 0;
       switch (Taste)
       {
          case 0: // null-pos, nichts tun
@@ -1011,19 +1087,19 @@ void loop()
                            {
                               
                            }break;
-
+                              
                            case SIM:
                            {
-
+                              
                            }break;
-
+                              
                            case CALIB:
                            {
                               calibstatus &= ~(1<<CALIB_START);
                            }break;
                         }// switch curr_modus
                         curr_modus--;
-                     
+                        
                         
                      }
                   }break;
@@ -1185,7 +1261,7 @@ void loop()
                            Serial.print("T 5 screen 4 curr_wert: ");
                            Serial.println(curr_wert);
                         }break;
-
+                           
                         case 5: // 
                         {
                            Serial.print("T 5 screen 5 curr_modus: ");
@@ -1205,11 +1281,11 @@ void loop()
                            
                            updateModusScreen();
                            u8g2.sendBuffer();
-
+                           
                            //setCalib();
                         }break;
-
-
+                           
+                           
                      }// switch (curr_screen)
                   }
                }
@@ -1374,16 +1450,16 @@ void loop()
                         curr_cursorspalte = 0;
                         setFunktionScreen();
                      }break;
-
+                        
                      case 4: // check
                      {
                         curr_screen = 0;
                         setHomeScreen();
-
+                        
                      }break;
                      case 5: // MODUSSCREEN
                      {
-
+                        
                         setHomeScreen();
                      }break;
                         
@@ -1532,7 +1608,7 @@ void loop()
                      
                   case 5: // T8 DOWN MODUSSCREEN
                   {
-
+                     
                      if(curr_modus < 2)
                      {
                         curr_modus++;
@@ -1540,14 +1616,14 @@ void loop()
                         {
                            case MODELL:
                            {
-
+                              
                            }break;
-
+                              
                            case SIM:
                            {
-
+                              
                            }break;
-
+                              
                            case CALIB:
                            {
                               updateModusScreen();
@@ -1586,7 +1662,7 @@ void loop()
                         eepromwrite();
                         savestatus = CANCEL;
                      }break;
-                     
+                        
                      case 1: // CANCEL
                      {
                         // do nothing
@@ -1594,10 +1670,10 @@ void loop()
                         curr_cursorspalte = 0;
                         savestatus = CANCEL;
                      }break;
-
-                    
-                     
-                     //u8g2.sendBuffer();
+                        
+                        
+                        
+                        //u8g2.sendBuffer();
                   }   
                }break;
                   
@@ -1612,69 +1688,107 @@ void loop()
          tastaturstatus &= ~(1<<TASTE_OK);
       }
    }
-  loopcounter0++;
-
-  if(loopcounter0 >= BLINKRATE)
+   loopcounter0++;
+   
+   if(loopcounter0 >= BLINKRATE)
    {
       loopcounter0 = 0;
       loopcounter1++;
       if(loopcounter1 > 128)
       {
          loopcounter1 = 0;
+        // Serial.print(" YAW: ");
+         //Serial.print(potwertarray[YAW]);
+         //Serial.print(" yaw: ");
+         //Serial.print(data.yaw);
+         //Serial.print("\n");
          //tastaturwert = analogRead(TASTATUR_PIN);
-        
-        //Serial.print("tastaturwert: ");
-        //Serial.print(tastaturwert);
-
-        //Serial.print("\t");
-        //Serial.print("tastendelaycounter: ");
-        //Serial.print(tastendelaycounter);
-        
-        //tastenfunktion(tastaturwert);
-        
-        //Serial.println(blinkcounter);
-        // Taste = 0;
-        //Serial.print(tastaturwert);
-
-        tastaturwert = 0;
-        blinkcounter++;
-        impulscounter+=16;
-        digitalWrite(LOOPLED, ! digitalRead(LOOPLED));
-        digitalWrite(PRINTLED, ! digitalRead(PRINTLED));
-
+         
+         //Serial.print("tastaturwert: ");
+         //Serial.print(tastaturwert);
+         
+         //Serial.print("\t");
+         //Serial.print("tastendelaycounter: ");
+         //Serial.print(tastendelaycounter);
+         
+         //tastenfunktion(tastaturwert);
+         
+         //Serial.println(blinkcounter);
+         // Taste = 0;
+         //Serial.print(tastaturwert);
+         
+         tastaturwert = 0;
+         blinkcounter++;
+         impulscounter+=16;
+         digitalWrite(LOOPLED, ! digitalRead(LOOPLED));
+         digitalWrite(PRINTLED, ! digitalRead(PRINTLED));
+         
          // Batterie
-          batteriespannung = analogRead(BATT_PIN);
-      batteriearray[batteriemittelwertcounter] = batteriespannung;
-      batteriemittelwertcounter++;
-      batteriemittelwertcounter &= 0x07;
-      batteriemittel = 0;
-      for(uint8_t i=0;i<8;i++)
-      {
-         batteriemittel += batteriearray[i];
-      }
-      batteriemittel /= 8;
-      //Serial.println(batteriemittel);
-      batterieanzeige = (0x50*batteriespannung)/0x6B/8; // resp. /107
-      
-      UBatt = float(batteriespannung) / 107;
-
-        if(curr_screen == 0)
-      {
-         updateHomeScreen();
-         u8g2.sendBuffer();
-      }
-      
+         batteriespannung = analogRead(BATT_PIN);
+         batteriearray[batteriemittelwertcounter] = batteriespannung;
+         batteriemittelwertcounter++;
+         batteriemittelwertcounter &= 0x07;
+         batteriemittel = 0;
+         for(uint8_t i=0;i<8;i++)
+         {
+            batteriemittel += batteriearray[i];
+         }
+         batteriemittel /= 8;
+         //Serial.println(batteriemittel);
+         batterieanzeige = (0x50*batteriespannung)/0x6B/8; // resp. /107
+         
+         UBatt = float(batteriespannung) / 107;
+         
+         if(curr_screen == 0)
+         {
+            updateHomeScreen();
+            u8g2.sendBuffer();
+         }
+         
+         //if(calibstatus & (1<CALIB_START))
+         {
+            
+            Serial.print(" YAW: ");
+            Serial.print(potwertarray[YAW]);
+            
+            Serial.print(" yaw: ");
+            Serial.print(data.yaw);   
+            
+            Serial.print(" PITCH: ");
+            Serial.print(potwertarray[PITCH]);
+            
+            Serial.print(" pitch: ");
+            Serial.print(data.pitch);   
+            
+            Serial.print(" ROLL: ");
+            Serial.print(potwertarray[ROLL]);
+            
+            Serial.print(" roll: ");
+            Serial.print(data.roll);
+            
+            Serial.print(" Throttle: ");
+            Serial.print(potwertarray[THROTTLE]);
+            
+            
+            Serial.print(" data.throttle: ");
+            Serial.print(data.throttle);
+            
+            Serial.print("\n");
+            
+         }
       }// loopcounter1
    } // if loopcount0
-
-
-
+   
+   
+   
+   
+   
    radiocounter++;
    
-
-
-  //digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  //delay(1000);               // wait for a second
-  //digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  //delay(1000);               // wait for a second
+   
+   
+   //digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+   //delay(1000);               // wait for a second
+   //digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+   //delay(1000);               // wait for a second
 }
