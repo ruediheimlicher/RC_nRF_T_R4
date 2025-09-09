@@ -189,7 +189,7 @@ void oled_batteriebalken_setwert(uint8_t x,uint8_t y, uint8_t b, uint8_t h,uint1
   u8g2.drawBox(x+1,y+h-anzeige,b-2,anzeige);
   u8g2.setDrawColor(0);
   u8g2.drawHLine(x,y+h-min,b);
-  u8g2.drawHLine(x,y+h-min-1,b);
+  //u8g2.drawHLine(x,y+h-min-1,b);
   u8g2.setDrawColor(1);
 
        // Batt

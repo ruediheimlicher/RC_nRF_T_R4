@@ -349,7 +349,7 @@ void cleargrenzen(void)
 void eepromwrite(void)
 
 {
-   Serial.print("eepromwrite\n");  
+   Serial.print("eepromwrite start\n");  
    for (uint8_t i = 0;i<NUM_SERVOS;i++)
    {
       Serial.print("potgrenzearray raw i:\t");
@@ -685,9 +685,12 @@ void setup()
    
    Serial.println(__DATE__);
    Serial.println(__TIME__);
+   Serial.print("eeprom vor read");
    printeeprom(160);
    
-   //eepromread();
+   eepromread();
+   Serial.print("eeprom nach read");
+   printeeprom(160);
 
    pinMode(BUZZPIN,OUTPUT);
    pinMode(BATT_PIN,INPUT);
@@ -705,7 +708,7 @@ void setup()
    delay(100);
 
    // *****
-   cleargrenzen();
+   //cleargrenzen();
    // *****
    
    oled_vertikalbalken(BATTX,BATTY,BATTB,BATTH);
@@ -1331,12 +1334,14 @@ void loop()
                            
                            if(!(calibstatus & (1<<CALIB_START))) // calib noch nicht gesetzt
                            {
+                              Serial.print("T 5 screen 5 calib start clear grenzen: ");
                               cleargrenzen();
                               calibstatus |= (1<<CALIB_START);
                            }
                            else
                            {
                               calibstatus &= ~(1<<CALIB_START);// calib beenden
+                              Serial.print("T 5 screen 5 calib end eeprom write: ");
                               eepromwrite();       // settings in eeprom
                            }
                            
@@ -1706,15 +1711,16 @@ void loop()
             
          case 9:
          {
-            Serial.print("T 9 SAVE");  
+            Serial.print("T 9 SAVE ");  
             
             switch (curr_screen)
             {
                case 0:
                {
-                  //Serial.print(" savestatus: ");  
-                  //Serial.print(savestatus);
-                  //Serial.print(" curr_cursorspalte: ");  
+                  Serial.print(" savestatus: ");  
+                  Serial.print(savestatus);
+                  //Serial.print(" curr_cursorspalte: "); 
+                  Serial.print("\t") ;
                   Serial.print(curr_cursorspalte);
                   switch (savestatus)
                   {
@@ -1722,6 +1728,8 @@ void loop()
                      {
                         // write to eeprom
                         eepromwrite();
+                        Serial.print("SAVE eepromwrite\n"); 
+                        printeeprom(160);
                         savestatus = CANCEL;
                      }break;
                         
