@@ -317,29 +317,29 @@ void updateHomeScreen()
       //u8g2.setCursor(4,30);
       //u8g2.print(data.yaw);
       sprintf(buf0, "%3d", data.yaw);
-      u8g2.drawStr(TAB0,30,buf0);
+      u8g2.drawStr(TAB0,32,buf0);
       
       // Pitch
      // u8g2.setCursor(36,30);
      // u8g2.print(data.pitch);
       sprintf(buf0, "%3d", data.pitch);
-      u8g2.drawStr(30,30,buf0);
+      u8g2.drawStr(30,32,buf0);
 
       // Roll
       //u8g2.setCursor(4,46);
       //u8g2.print(data.roll);
       sprintf(buf0, "%3d", data.roll);
-      u8g2.drawStr(TAB0,42,buf0);
+      u8g2.drawStr(TAB0,44,buf0);
       
       // Throttle
       //u8g2.setCursor(36,46);
       //u8g2.print(data.throttle);
       sprintf(buf0, "%3d", data.throttle);
-      u8g2.drawStr(30,42,buf0);
+      u8g2.drawStr(30,44,buf0);
      
       uint8_t p = curr_model;
    oled_batteriebalken_setwert(BATTX,BATTY,BATTB,BATTH,batterieanzeige);
-   oled_setBatterieWert(BATTX,BATTY+BATTH+18,BATTB,24,UBatt);
+   oled_setBatterieWert(BATTX,BATTY+BATTH+18,BATTB,26,UBatt);
    //u8g2.sendBuffer();
    uint8_t la = kanalsettingarray[0][0][1] & 0x07;
    uint8_t  lb = (kanalsettingarray[0][0][1] & 0x70)>>4;
@@ -828,19 +828,35 @@ void refreshScreen(void)
       case 0:
       {
          u8g2.setDrawColor(0);
-         u8g2.drawFrame(54,3,41,12);
+         u8g2.drawBox(60,3,44,12);
          u8g2.setDrawColor(1);
          char buf[6];
-         sprintf(buf, "%2d:%2d",stopminute,stopsekunde);
-         u8g2.drawStr(54,14,buf);
+         if(stopsekunde < 10)
+         {
+            sprintf(buf, "%2d:0%1d",stopminute,stopsekunde);
+         }
+         else
+         {
+            sprintf(buf, "%2d:%2d",stopminute,stopsekunde);
+         }
+         
+         u8g2.drawStr(60,14,buf);
 
-         u8g2.setCursor(62,28);
+         //u8g2.setCursor(62,28);
          //u8g2.print(throttlecounter);
 
          //sprintf(buf,"%1.0F", throttlesekunden);
 
          u8g2.setCursor(62,44);
-         u8g2.print(throttlesekunden);
+         u8g2.print("T:");
+         sprintf(buf, "%3d",throttlesekunden);
+         u8g2.setDrawColor(0);
+         u8g2.drawBox(76,34,26,12);
+         u8g2.setDrawColor(1);
+         u8g2.drawStr(76,44,buf);
+         //u8g2.setCursor(84,44);
+        // u8g2.print(throttlesekunden);
+
          //u8g2.setFont(u8g2_font_inb24_mr);
          //u8g2.drawStr(64,42,buf);
          //u8g2.setFont(u8g2_font_t0_15_mr);

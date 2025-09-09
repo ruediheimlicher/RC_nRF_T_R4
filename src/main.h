@@ -16,10 +16,10 @@ struct Signal
    byte aux2;
    
 };
-#define BATTX  102
+#define BATTX  106
 #define BATTY  2
 #define BATTH  44
-#define BATTB  24
+#define BATTB  20
 
 // defines for array pos
 #define YAW         0
@@ -69,7 +69,7 @@ struct Signal
 #define MENU_ON            5
 
 #define TASTATUR_WAIT      6 // delay
-#define TASTENDELAY        0x0FFF
+#define TASTENDELAY        10
 /*
 // nano_every
 #define JOYSTICKTASTE1 70

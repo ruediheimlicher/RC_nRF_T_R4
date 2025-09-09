@@ -13,6 +13,11 @@
 #define PRINTLED     4 // Board nRF_T_nano2
 #define BLINKRATE 0x04FA
 
+#define OSZI_A D7
+#define OSZI_A_HI    digitalWrite(OSZI_A,HIGH)
+#define OSZI_A_LO    digitalWrite(OSZI_A,LOW)
+#define OSZI_A_TOGG    digitalWrite(OSZI_A,!digitalRead(OSZI_A))
+
 #define TEST 0
 #define CE_PIN 9
 #define CSN_PIN 10

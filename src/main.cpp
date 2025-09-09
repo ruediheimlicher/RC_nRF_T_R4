@@ -72,6 +72,8 @@ uint16_t throttlesekunden = 0;
 elapsedMillis   zeitintervall;
 elapsedMillis   sinceLastBlink = 0;
 
+elapsedMillis   impulsintervall;
+
 // pot
 uint16_t diffa = 0;
 uint16_t diffb = 0;
@@ -115,14 +117,14 @@ uint16_t                tastaturdelaycounter=0;
 
 
 // nRF
-uint16_t errcounter = 0;
-uint16_t radiocounter = 0;
+uint16_t                errcounter = 0;
+uint16_t                radiocounter = 0;
 
 // Display
 uint16_t                cursorpos[8][8]={}; // Aktueller screen: werte fuer page und darauf liegende col fuer den cursor
 
-unsigned        char char_x = 0;
-unsigned          char char_y = 0;
+unsigned                char char_x = 0;
+unsigned                char char_y = 0;
 // Menu
 uint8_t                 curr_model=0; // aktuelles modell
 uint8_t                 speichermodel=0;
@@ -145,7 +147,7 @@ uint8_t                 last_cursorzeile=0; // letzte zeile des cursors
 uint8_t                 last_cursorspalte=0; // letzte colonne des cursors
 
 
-Signal data;
+Signal                  data;
 
 // Functions
 void ResetData() 
@@ -473,7 +475,7 @@ void tastenfunktion(uint16_t Tastenwert)
       
       //Serial.print("\n");
       
-      if (tastaturcounter>=400)   //   Prellen
+      if (tastaturcounter>=50)   //   Prellen
       {        
          
          tastaturcounter=0x00;
@@ -515,7 +517,7 @@ void tastenfunktion(uint16_t Tastenwert)
          }
          //else // Taste neu gedrückt
          {
-            /*
+            
              Taste = 0;
              //tastaturstatus |= (1<<TASTE_ON); // nur einmal 
              
@@ -532,7 +534,7 @@ void tastenfunktion(uint16_t Tastenwert)
              u8g2.sendBuffer(); 
              
              }
-             */
+             
             
          }
       }
@@ -672,6 +674,8 @@ void setup()
    // initialize the digital pin as an output.
    pinMode(LOOPLED, OUTPUT);
    pinMode(PRINTLED, OUTPUT);
+   pinMode(OSZI_A, OUTPUT);
+   digitalWrite(OSZI_A,HIGH);
    
    // PPM decode
    pinMode(PPM_PIN, INPUT);
@@ -699,6 +703,10 @@ void setup()
    // Display
    initDisplay();
    delay(100);
+
+   // *****
+   cleargrenzen();
+   // *****
    
    oled_vertikalbalken(BATTX,BATTY,BATTB,BATTH);
    delay(100);
@@ -784,9 +792,33 @@ void setup()
 // the loop routine runs over and over again forever:
 void loop() 
 {
-   if((loopcounter0 % 128) == 0)
+   //if((loopcounter0 % 64) == 0)
+   /*
+   if(tastaturstatus & (1<<TASTATUR_WAIT)) // noch warten
+      {
+         if(tastendelaycounter)
+         {
+            tastendelaycounter--;
+            
+         }
+         else // Tastatur lesen
+         {
+            tastaturstatus &= ~(1<<TASTATUR_WAIT);
+            
+         }
+      }
+      else
+      {
+         //OSZI_A_LO;
+         tastaturwert = analogRead(TASTATUR_PIN);
+         tastenfunktion(tastaturwert);
+         //OSZI_A_HI;
+      }
+   */
+   if(impulsintervall >= 20)
    {
-      
+      impulsintervall = 0;
+      //OSZI_A_LO;
       
       if(tastaturstatus & (1<<TASTATUR_WAIT)) // noch warten
       {
@@ -803,13 +835,19 @@ void loop()
       }
       else
       {
+         //OSZI_A_LO;
          tastaturwert = analogRead(TASTATUR_PIN);
          tastenfunktion(tastaturwert);
+         //OSZI_A_HI;
       }
+      //tastaturwert = analogRead(TASTATUR_PIN);
+      //tastenfunktion(tastaturwert);
       
       // pot lesen
+      //OSZI_A_LO;
       for (uint8_t i=0;i<NUM_SERVOS;i++)
       {
+         
          potwert=analogRead(adcpinarray[i]);
          
          //if(calibstatus & (1<<CALIB_START))
@@ -819,18 +857,22 @@ void loop()
             if(potwert > potgrenzearray[i][0])
             {
                potgrenzearray[i][0] = potwert; // pothi
+               /*
                Serial.print(">> pot: ");
                Serial.print(i);
                Serial.print("wert: ");
                Serial.println(potwert);
+               */
             }
             if(potwert < potgrenzearray[i][1])
             {
                potgrenzearray[i][1] = potwert; // potlo
+               /*
                Serial.print("<< pot: ");
                Serial.print(i);
                Serial.print("wert: ");
                Serial.println(potwert);
+               */
             }
          }
          //potgrenzearray[0][0] = 17;
@@ -873,12 +915,28 @@ void loop()
          
          
       } // for i
+      //OSZI_A_HI;
       data.yaw = Border_Mapvar255(0, potwertarray[YAW],potgrenzearray[YAW][1],servomittearray[YAW],potgrenzearray[YAW][0],false);
       data.pitch = Border_Mapvar255(1, potwertarray[PITCH],potgrenzearray[PITCH][1],servomittearray[PITCH],potgrenzearray[PITCH][0],false);
       data.roll = Border_Mapvar255(2,potwertarray[ROLL],potgrenzearray[ROLL][1],servomittearray[ROLL],potgrenzearray[ROLL][0],false);
       data.throttle = Throttle_Map255(potwertarray[THROTTLE],servomittearray[THROTTLE], potgrenzearray[THROTTLE][0],10,127, false ); // nur eine haelfte 
 
-   }// if %64
+      data.aux1 = digitalRead(5);                                          // CH5
+      data.aux2 = digitalRead(7);                                          // CH6
+
+       //OSZI_A_LO;
+      if (radio.write(&data, sizeof(Signal)))
+      {
+         radiocounter++; 
+      }
+      else
+      {
+         Serial.print("radio error\n");
+         digitalWrite(BUZZPIN,!(digitalRead(BUZZPIN)));
+         errcounter++;
+      }
+      //OSZI_A_HI;
+   }// if intervallcounter
    
    
    if (zeitintervall > 500) 
@@ -898,8 +956,9 @@ void loop()
             stopsekunde = 0;
             stopminute++;
          }
+         //OSZI_A_LO;
          refreshScreen();
-         
+         //OSZI_A_HI;
       }
       else
       {
@@ -907,6 +966,7 @@ void loop()
       }
       if(curr_screen == 5)
       {
+
          updateModusScreen();
          u8g2.sendBuffer();
       }
@@ -916,6 +976,7 @@ void loop()
    
    if (tastaturstatus & (1<<TASTE_OK) && Taste) // Menu ansteuern
    {
+      //OSZI_A_TOGG;
       //Taste = 0;
       tastaturcounter = 0;
       switch (Taste)
@@ -1142,6 +1203,7 @@ void loop()
                            curr_cursorspalte = 0; // Rahmen auf YES
                            
                            updateHomeScreen();
+                           u8g2.sendBuffer();
                            
                         }
                      }
@@ -1209,7 +1271,7 @@ void loop()
                      taste5counter++;
                      Serial.print("taste5counter: ");
                      Serial.println(taste5counter);
-                     tastaturcounter = 300; // Mehrfachklick ermoeglichen
+                     tastaturcounter = 100; // Mehrfachklick ermoeglichen
                      if (taste5counter == 3)
                      {
                         curr_screen = 1;
@@ -1687,15 +1749,18 @@ void loop()
          Taste = 0;
          tastaturstatus &= ~(1<<TASTE_OK);
       }
+      //OSZI_A_HI;
    }
    loopcounter0++;
    
    if(loopcounter0 >= BLINKRATE)
    {
+
       loopcounter0 = 0;
       loopcounter1++;
-      if(loopcounter1 > 128)
+      if(loopcounter1 > 64)
       {
+         //OSZI_A_LO;
          loopcounter1 = 0;
         // Serial.print(" YAW: ");
          //Serial.print(potwertarray[YAW]);
@@ -1719,7 +1784,7 @@ void loop()
          
          tastaturwert = 0;
          blinkcounter++;
-         impulscounter+=16;
+         
          digitalWrite(LOOPLED, ! digitalRead(LOOPLED));
          digitalWrite(PRINTLED, ! digitalRead(PRINTLED));
          
@@ -1745,7 +1810,7 @@ void loop()
             u8g2.sendBuffer();
          }
          
-         //if(calibstatus & (1<CALIB_START))
+         if(calibstatus & (1<CALIB_START))
          {
             
             Serial.print(" YAW: ");
@@ -1772,10 +1837,17 @@ void loop()
             
             Serial.print(" data.throttle: ");
             Serial.print(data.throttle);
+
+             Serial.print(" radiocounter: ");
+            Serial.print(radiocounter);
+
+             Serial.print(" errcounter: ");
+            Serial.print(errcounter);
             
             Serial.print("\n");
             
          }
+         //OSZI_A_HI;
       }// loopcounter1
    } // if loopcount0
    
