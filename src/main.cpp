@@ -4,6 +4,7 @@
 #include <EEPROM.h>
 //#include <U8g2lib.h>
 
+#include "FspTimer.h"
 #include "display.h"
 
 #include "expo8.h"
@@ -53,6 +54,8 @@ uint8_t blinkstatus = 0;
 uint8_t curr_steuerstatus = 0;
 uint8_t calibstatus = 0;
 uint8_t savestatus = 0;
+
+uint8_t masterslavestatus = 0;
 
 // timing
 uint16_t stopsekunde=0;
@@ -149,6 +152,12 @@ uint8_t                 last_cursorspalte=0; // letzte colonne des cursors
 
 Signal                  data;
 
+// Master
+volatile                int ppmIndex = 0;
+volatile unsigned long  nextTime = 0;
+
+FspTimer ppmTimer;
+
 // Functions
 void ResetData() 
 {
@@ -162,16 +171,33 @@ void ResetData()
 }
 
 // PPM decode
-const byte PPM_PIN = 2; // PPM-Eingang an Pin 2
+//const byte PPM_IN_PIN = 2; // PPM-Eingang an Pin 2
 volatile unsigned long lastTime = 0;
 volatile unsigned long pulseLength = 0;
 volatile byte channel = 0;
 const byte maxChannels = 8;
 volatile unsigned int ppmValues[maxChannels];
 
-void ppmISR() 
+void dirISR() 
 {
-   unsigned long now = micros();
+  if(digitalRead(PPM_DIR_PIN)) // PIN HI, Plug eingesteckt, M/S
+  {
+      // Slave: Ausgang.  Master: Eingang
+      pinMode(PPM_DATA_PIN, OUTPUT);
+      masterslavestatus |= (1<<MASTER);
+      masterslavestatus &= ~(1<<SLAVE);
+  }
+  else
+  {
+      pinMode(PPM_DATA_PIN, INPUT);
+      masterslavestatus |= (1<<SLAVE);
+      masterslavestatus &= ~(1<<MASTER);
+  }
+}
+
+void ppmISR()
+{
+    unsigned long now = micros();
    pulseLength = now - lastTime;
    lastTime = now;
    
@@ -677,9 +703,18 @@ void setup()
    pinMode(OSZI_A, OUTPUT);
    digitalWrite(OSZI_A,HIGH);
    
-   // PPM decode
-   pinMode(PPM_PIN, INPUT);
-   attachInterrupt(digitalPinToInterrupt(PPM_PIN), ppmISR, RISING);
+   // PPM direction
+   pinMode(PPM_DIR_PIN, INPUT);
+
+   attachInterrupt(digitalPinToInterrupt(PPM_DIR_PIN), ppmISR, CHANGE);
+
+
+// FSP_Timer
+
+// PPM decode/decode
+   pinMode(PPM_DATA_PIN, INPUT);
+
+   attachInterrupt(digitalPinToInterrupt(PPM_DATA_PIN), ppmISR, RISING);
    
    curr_steuerstatus = MODELL;
    

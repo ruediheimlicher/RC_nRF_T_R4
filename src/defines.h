@@ -49,7 +49,14 @@
 
 #define MINDIFF 4
 
+// MasterSlave
+#define MASTER                   0
+#define SLAVE                    1
 
+#define FRAME_LENGTH             20000 // 20ms Gesamtframe
+#define SYNC_PULSE_LENGTH          300  // Pulsdauer (µs)
+#define PPM_DATA_PIN           5  // Print nano 5: 6
+#define PPM_DIR_PIN               2  // LOW wenn kein Stecker
 
 // Tastatur
 #define TASTATUR_PIN A7
