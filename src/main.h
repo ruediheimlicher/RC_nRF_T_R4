@@ -36,7 +36,7 @@ struct Signal
 #define NUM_SERVOS  4
 
 #define  ANZAHLMODELLE        5
-#define  KANALSETTINGBREITE   4
+#define  KANALSETTINGBREITE   5
 #define  MODELSETTINGBREITE   32 // nur Kanalsettings. Anschliessend MixingSettings
 #define  EEPROM_MODELSETTINGBREITE 64 //Kanalsettings und MixingSettings
 

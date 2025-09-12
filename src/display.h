@@ -48,9 +48,12 @@ void updateModellScreen(void);
 
 void setFunktionScreen(void);
 void updateFunktionScreen(void);
+void updateFunktionScreen_a();
 
 void setAktionScreen(void);
 void updateAktionScreen(void);
+
+
 
 void refreshScreen(void);
 

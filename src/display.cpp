@@ -495,7 +495,139 @@ void setFunktionScreen() // Auswahl Aktion
    updateFunktionScreen();
 }// setFunktionScreen
 
+
 void updateFunktionScreen()
+{
+   
+   uint8_t offsetoben = 2;
+   uint8_t i = 0;
+   //u8g2.setFont(u8g2_font_t0_14_mr);  
+   u8g2.setFont(u8g2_font_t0_14_mr);  
+   charh = u8g2.getMaxCharHeight()-1;
+   char_x = 36;
+
+   uint8_t feldx = 110;
+   uint8_t feldyO = 6;
+   uint8_t feldb = 16;
+   uint8_t feldh = 16;
+   uint8_t fkt = 0;
+
+   uint8_t level = kanalsettingarray[curr_model][curr_funktion][1];
+
+   uint8_t expo = kanalsettingarray[curr_model][curr_funktion][2];
+   //Serial.print("updatefunktionscreen level: ");
+   //Serial.print(level);
+   //Serial.print(" expo: ");
+   //Serial.println(expo);
+   uint8_t levelO = (level & 0xF0) >> 4;
+   uint8_t levelU = (level & 0x0F);
+   uint8_t expoO = (expo & 0xF0) >> 4;
+   uint8_t expoU = expo & 0x0F;
+   
+   u8g2.setDrawColor(1);
+
+   for (i=0;i<<ANZ_AKTION;i++)
+   {
+      char_y = i *  FUNKTION_ZEILENABSTAND + offsetoben;
+      
+      u8g2.drawStr(char_x+2,char_y + charh, AktionTable[i]);
+
+      u8g2.setFont(u8g2_font_unifont_t_symbols);
+      
+      u8g2.drawGlyph(86,char_y + 8, 0x23F6); 
+      u8g2.drawGlyph(86,char_y + 18, 0x23F7);
+      u8g2.setFont(u8g2_font_t0_14_mr);
+      
+      /*
+      switch (i)
+      {
+         case 0: // Level
+         {
+            u8g2.setCursor(itemtab[6], char_y + 8);
+            u8g2.print(levelO);
+            u8g2.setCursor(itemtab[6], char_y + 18);
+            u8g2.print(levelU);
+         }break;
+         case 1:
+         {
+            u8g2.setCursor(itemtab[6], char_y + 8);
+            u8g2.print(expoO);
+            u8g2.setCursor(itemtab[6], char_y + 18);
+            u8g2.print(expoU);
+
+         }break;
+         case 2:
+         {
+
+         }break;
+         case 3:
+         {
+
+         }break;
+      }// switch i
+      */
+      
+      //u8g2.drawStr(char_x+2,char_y + charh + zeilenabstand, AktionTable[1]);
+      
+      //u8g2.setFont(u8g2_font_unifont_t_symbols);
+      
+      //u8g2.drawGlyph(86,char_y + 8, 0x23F6);
+      //u8g2.drawGlyph(86,char_y + 18, 0x23F7);
+
+      //u8g2.drawGlyph(86,char_y + 8 + zeilenabstand, 0x23F6);
+      //u8g2.drawGlyph(86,char_y + 18 + zeilenabstand, 0x23F7);
+         
+        
+      //Serial.print(" curr_funktion: ");
+      //Serial.println(curr_funktion);
+      
+      
+
+
+      
+      /*
+     
+      //while (char_y < 64)
+
+      {
+         
+         if(i==curr_aktion)
+         {
+            u8g2.setDrawColor(1);
+            u8g2.drawFrame(char_x,char_y,48,16);
+            
+         }
+         else
+         {
+            u8g2.setDrawColor(0);
+            u8g2.drawFrame(char_x,char_y,48,16);
+            u8g2.setDrawColor(1);
+         }
+         switch (curr_cursorspalte)
+         {
+            case 0:
+            {
+
+            }break;
+            case 1: // Level, expo up, down
+            {
+
+            }break;
+         }// switch curr_cursorspalte
+
+         //char_y += zeilenabstand;
+         //fkt++;
+         
+      }
+      */
+   } // for i
+
+   u8g2.setFont(u8g2_font_t0_15_mr);  
+
+}// updateFunktionScreen
+
+
+void updateFunktionScreen_a()
 {
    char_y = scrollpos + 2;
    uint8_t i = 0;
@@ -585,6 +717,8 @@ void updateFunktionScreen()
    u8g2.setFont(u8g2_font_t0_15_mr);  
 
 }// updateFunktionScreen
+
+
 
 void setAktionScreen()
 {

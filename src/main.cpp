@@ -353,7 +353,9 @@ void clearsettings(void)
    for (uint8_t i = 0;i<NUM_SERVOS;i++)
    {
       kanalsettingarray[curr_model][i][1] = 0x00; // level
-      kanalsettingarray[curr_model][i][2] = 0x00; // level
+      kanalsettingarray[curr_model][i][2] = 0x00; // expo
+      kanalsettingarray[curr_model][i][3] = 0x00; // trim
+      kanalsettingarray[curr_model][i][4] = 0x00; // ri
       
    } // for i
 }
@@ -598,6 +600,8 @@ void setModus(void)
             
             kanalsettingarray[0][i][1] = 0x00; // level
             kanalsettingarray[0][i][2] = 0x00; // expo
+
+
          }
       }break;
          
@@ -814,6 +818,7 @@ void setup()
       
       //kanalsettingarray[0][i][1] = 0x11; // level
       //kanalsettingarray[0][i][2] = 0x33; // expo
+   
    }
    
    Serial.print("\n");
@@ -1076,11 +1081,16 @@ void loop()
                         {
                            if(curr_aktion)
                            {
+
                               curr_aktion--;
-                              //scrollpos -= FUNKTION_ZEILENABSTAND;
-                              updateFunktionScreen();
-                              u8g2.sendBuffer();
+                              if(curr_aktion) // immer noch > 0, scrollen
+                              {
+                                 //scrollpos -= FUNKTION_ZEILENABSTAND;
+                              }
                            }
+                              updateFunktionScreen_a();
+                              u8g2.sendBuffer();
+                           
                         }break;
                         case 1: // Level, expo up, down
                         {
@@ -1343,6 +1353,7 @@ void loop()
                            Serial.print("T 5 > FunktionScreen curr_funktion: " );
                            Serial.println(curr_funktion);
                            setFunktionScreen();
+                           updateFunktionScreen();
                            curr_screen = 3;
                            u8g2.sendBuffer();
                         }break;
@@ -1614,8 +1625,12 @@ void loop()
                      if(curr_aktion < 5)
                      {
                         curr_aktion++;
-                        //scrollpos += FUNKTION_ZEILENABSTAND;
-                        updateFunktionScreen();
+                        if(curr_aktion < ANZ_AKTION-1) // noch nicht ganz am Ende
+                        {
+                           scrollpos += FUNKTION_ZEILENABSTAND;
+                        }
+                        
+                        updateFunktionScreen_a();
                         u8g2.sendBuffer();
                      }
                   }break;
