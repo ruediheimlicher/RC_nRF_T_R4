@@ -57,6 +57,7 @@
 #define SYNC_PULSE_LENGTH          300  // Pulsdauer (µs)
 #define PPM_DATA_PIN           5  // Print nano 5: 6
 #define PPM_DIR_PIN               2  // LOW wenn kein Stecker
+#define MASTER_SLAVE_PIN         8 // PCB nano6  7 PCB nano2
 
 // Tastatur
 #define TASTATUR_PIN A7
@@ -68,6 +69,7 @@
 #define MODELLSCREEN    1 // SYMPEL, TROTTLE ...
 #define FUNKTIONSCREEN  2 // YAW,PITCH ...
 #define AKTIONSCREEN    3 // LEVEL, EXPO ...
+#define ANZ_AKTION      4
 
 
 #define MODUSSCREEN     5

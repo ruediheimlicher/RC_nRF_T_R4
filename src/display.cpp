@@ -36,6 +36,8 @@ extern uint8_t                   curr_steuerstatus;
 extern uint16_t                  blink_cursorpos;
 extern uint8_t                   blinkstatus;
 extern uint8_t                   calibstatus;
+extern uint8_t                   scrollpos;
+extern uint8_t                   zeilenabstand;
 
 
 
@@ -480,22 +482,25 @@ void setFunktionScreen() // Auswahl Aktion
    u8g2.clear();
    resetRegister();
    blink_cursorpos=0xFFFF;
-   char_x = 18;
+   char_x = 22;
    char_y = 45;
    //u8g2.drawFrame(char_y,char_y,64,18);
    u8g2.setDrawColor(1);
+   // Funktion links senkrecht
    u8g2.setFontDirection(3);
    u8g2.drawStr(char_x,char_y + charh,FunktionTable[curr_funktion]);
    u8g2.setFontDirection(0);
+   scrollpos = 0;
+   zeilenabstand = FUNKTION_ZEILENABSTAND;
    updateFunktionScreen();
 }// setFunktionScreen
 
 void updateFunktionScreen()
 {
-   char_y = 4;
+   char_y = scrollpos + 2;
    uint8_t i = 0;
    //u8g2.setFont(u8g2_font_t0_14_mr);  
-   u8g2.setFont(u8g2_font_t0_15_mr);  
+   u8g2.setFont(u8g2_font_t0_14_mr);  
    charh = u8g2.getMaxCharHeight()-1;
    char_x = 36;
 
@@ -504,20 +509,22 @@ void updateFunktionScreen()
    uint8_t feldb = 16;
    uint8_t feldh = 16;
    uint8_t fkt = 0;
+
+   
    
    u8g2.setDrawColor(1);
    u8g2.drawStr(char_x+2,char_y + charh, AktionTable[0]);
-   u8g2.drawStr(char_x+2,char_y + charh + 36, AktionTable[1]);
+   u8g2.drawStr(char_x+2,char_y + charh + zeilenabstand, AktionTable[1]);
    
    u8g2.setFont(u8g2_font_unifont_t_symbols);
    
-   u8g2.drawGlyph(86,char_y + 6, 0x23F6);
-   u8g2.drawGlyph(86,char_y + 22, 0x23F7);
+   u8g2.drawGlyph(86,char_y + 8, 0x23F6);
+   u8g2.drawGlyph(86,char_y + 18, 0x23F7);
 
-   u8g2.drawGlyph(86,char_y + 6 + 36, 0x23F6);
-   u8g2.drawGlyph(86,char_y + 22 + 36, 0x23F7);
+   u8g2.drawGlyph(86,char_y + 8 + zeilenabstand, 0x23F6);
+   u8g2.drawGlyph(86,char_y + 18 + zeilenabstand, 0x23F7);
       
-   u8g2.setFont(u8g2_font_t0_15_mr);  
+   u8g2.setFont(u8g2_font_t0_14_mr);  
    //Serial.print(" curr_funktion: ");
    //Serial.println(curr_funktion);
    
@@ -532,20 +539,20 @@ void updateFunktionScreen()
    uint8_t levelU = (level & 0x0F);
    uint8_t expoO = (expo & 0xF0) >> 4;
    uint8_t expoU = expo & 0x0F;
-   u8g2.setCursor(itemtab[6], char_y + 6);
+   u8g2.setCursor(itemtab[6], char_y + 8);
    u8g2.print(levelO);
-   u8g2.setCursor(itemtab[6], char_y + 22);
+   u8g2.setCursor(itemtab[6], char_y + 18);
    u8g2.print(levelU);
 
-   u8g2.setCursor(itemtab[6], char_y + 36 + 6);
+   u8g2.setCursor(itemtab[6], char_y + zeilenabstand + 8);
    u8g2.print(expoO);
-   u8g2.setCursor(itemtab[6], char_y + 36 + 22);
+   u8g2.setCursor(itemtab[6], char_y + zeilenabstand + 18);
    u8g2.print(expoU);
 
    while (char_y < 64)
+
    {
       
-
       if(i==curr_aktion)
       {
          u8g2.setDrawColor(1);
@@ -570,7 +577,7 @@ void updateFunktionScreen()
          }break;
       }// switch curr_cursorspalte
 
-      char_y += 36;
+      char_y += zeilenabstand;
       fkt++;
       i++;
    }

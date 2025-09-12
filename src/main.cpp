@@ -15,10 +15,7 @@
 #include <elapsedMillis.h>
 #include "defines.h"
 
-
-
 const uint64_t pipeOut = 0xABCDABCD71LL;    
-
 
 int led = LED_BUILTIN;
 
@@ -43,9 +40,9 @@ uint16_t        potwert = 0;
 uint8_t         expowertarray[NUM_SERVOS] = {}; // expowert pro Servo
 uint16_t          potwertarray[NUM_SERVOS] = {}; // Werte fuer Mitte
 uint8_t       levelwertarray[NUM_SERVOS] = {}; // leelwert pro servo
-uint16_t      blink_cursorpos=0xFFFF;
-
-
+uint16_t       blink_cursorpos=0xFFFF;
+uint8_t         scrollpos= 0;
+uint8_t        zeilenabstand = 0;
 RF24 radio(CE_PIN, CSN_PIN);
 
 
@@ -1080,6 +1077,7 @@ void loop()
                            if(curr_aktion)
                            {
                               curr_aktion--;
+                              //scrollpos -= FUNKTION_ZEILENABSTAND;
                               updateFunktionScreen();
                               u8g2.sendBuffer();
                            }
@@ -1616,6 +1614,7 @@ void loop()
                      if(curr_aktion < 5)
                      {
                         curr_aktion++;
+                        //scrollpos += FUNKTION_ZEILENABSTAND;
                         updateFunktionScreen();
                         u8g2.sendBuffer();
                      }

@@ -57,6 +57,8 @@ struct Signal
 #define SAVE_DEVICE     5
 #define SAVE_AUSGANG    6
 
+#define                          FUNKTION_ZEILENABSTAND 22
+
 // Joystick
 
 #define OLED 1

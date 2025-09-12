@@ -1,0 +1,102 @@
+
+#include "FspTimer.h"
+
+FspTimer ppmTimer;
+
+const uint8_t PPM_PIN = 2;           // Ausgangspin
+const uint8_t NUM_CHANNELS = 8;
+const uint16_t FRAME_LENGTH = 20000; // 20ms Frame
+const uint16_t SYNC_PULSE = 300;     // 300µs Low-Puls
+
+// Kanäle (könnten z. B. vom nRF24 kommen)
+volatile uint16_t channels[NUM_CHANNELS] = {
+  1500, 1500, 1500, 1500,
+  1500, 1500, 1500, 1500
+};
+
+// Zustandsvariablen für ISR
+volatile uint8_t currentChannel = 0;
+volatile bool pulseState = false; // false = Sync (Low), true = Kanal-High
+volatile uint32_t restFrameTime = 0;
+
+void ppm_callback(timer_callback_args_t*) {
+  static uint32_t elapsedFrame = 0;
+
+  if (!pulseState) {
+    // SYNC-Impuls (LOW)
+    digitalWrite(PPM_PIN, LOW);
+    ppmTimer.setPeriod(SYNC_PULSE, MICROSEC);
+    pulseState = true;
+  } else {
+    // Kanal-High
+    digitalWrite(PPM_PIN, HIGH);
+
+    if (currentChannel < NUM_CHANNELS) {
+      uint16_t duration = channels[currentChannel] - SYNC_PULSE;
+      ppmTimer.setPeriod(duration, MICROSEC);
+
+      elapsedFrame += channels[currentChannel];
+      currentChannel++;
+      pulseState = false;
+    } else {
+      // Frame-Ende: Rest auffüllen
+      uint32_t rest = FRAME_LENGTH - elapsedFrame;
+      ppmTimer.setPeriod(rest, MICROSEC);
+
+      // Reset
+      elapsedFrame = 0;
+      currentChannel = 0;
+      pulseState = false;
+    }
+  }
+}
+
+bool setupPpmTimer() {
+  uint8_t timerType = GPT_TIMER;
+  int8_t tIndex = FspTimer::get_available_timer(timerType);
+  if (tIndex < 0) tIndex = FspTimer::get_available_timer(timerType, true);
+  if (tIndex < 0) return false;
+
+ChatGPT:
+dc summensignal aus data von nrf24 mit timer auf nano_r4, active High
+
+Datasheet:
+// FspTimer.cpp (Auszug)
+bool FspTimer::force_pwm_reserved = false;
+TimerAvail_t FspTimer::gpt_used_channel[GPT_HOWMANY] = { TIMER_FREE };
+
+FspTimer::FspTimer(): init_ok(false), agt_timer(nullptr), gpt_timer(nullptr), type(GPT_TIMER), _period_buffer(true) {
+    // AGT0 ist für millis()/micros() reserviert
+}
+
+  
+
+
+FspTimer::force_use_of_pwm_reserved_timer();
+
+  // Dummy-Frequenz; später ändern wir Perioden dynamisch
+  if (!ppmTimer.begin(TIMER_MODE_PERIODIC, timerType, tIndex,
+                      1000.0f, 0.0f, ppm_callback)) return false;
+  if (!ppmTimer.setup_overflow_irq()) return false;
+  if (!ppmTimer.open()) return false;
+  if (!ppmTimer.start()) return false;
+
+  return true;
+}
+
+void setup() {
+  pinMode(PPM_PIN, OUTPUT);
+  digitalWrite(PPM_PIN, HIGH); // Ruhepegel = High (Active High)
+
+  Serial.begin(115200);
+  if (!setupPpmTimer()) {
+    Serial.println("Fehler beim Timer-Setup!");
+  } else {
+    Serial.println("PPM-Ausgabe gestartet");
+  }
+}
+
+void loop() {
+  // Hier würdest du die Kanalwerte aktualisieren, z.B. über nRF24
+  // channels[0] = neuer Wert in µs ...
+}
