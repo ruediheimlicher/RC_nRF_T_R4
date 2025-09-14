@@ -41,7 +41,7 @@ uint8_t         expowertarray[NUM_SERVOS] = {}; // expowert pro Servo
 uint16_t          potwertarray[NUM_SERVOS] = {}; // Werte fuer Mitte
 uint8_t       levelwertarray[NUM_SERVOS] = {}; // leelwert pro servo
 uint16_t       blink_cursorpos=0xFFFF;
-uint8_t         scrollpos= 0;
+int16_t         scrollpos= 0; // kann negativ sein
 uint8_t        zeilenabstand = 0;
 RF24 radio(CE_PIN, CSN_PIN);
 
@@ -353,7 +353,10 @@ void clearsettings(void)
    for (uint8_t i = 0;i<NUM_SERVOS;i++)
    {
       kanalsettingarray[curr_model][i][1] = 0x00; // level
-      kanalsettingarray[curr_model][i][2] = 0x00; // level
+      kanalsettingarray[curr_model][i][2] = 0x00; // expo
+      kanalsettingarray[curr_model][i][3] = 0x00; // trim
+      kanalsettingarray[curr_model][i][4] = 0x00; // ri
+
       
    } // for i
 }
@@ -1077,6 +1080,15 @@ void loop()
                            if(curr_aktion)
                            {
                               curr_aktion--;
+                                                      
+                              if(curr_aktion)
+                              {
+                                  //scrollpos -= FUNKTION_ZEILENABSTAND;
+                                 
+                              }
+   
+                              
+
                               //scrollpos -= FUNKTION_ZEILENABSTAND;
                               updateFunktionScreen();
                               u8g2.sendBuffer();
@@ -1611,9 +1623,14 @@ void loop()
                      
                   case 3:  // FUNKTIONSCREEN 
                   {
-                     if(curr_aktion < 5)
+                     if(curr_aktion < 4)
                      {
                         curr_aktion++;
+                        if(curr_aktion < 4)
+                        {
+                           //scrollpos += FUNKTION_ZEILENABSTAND;
+                                 
+                        }
                         //scrollpos += FUNKTION_ZEILENABSTAND;
                         updateFunktionScreen();
                         u8g2.sendBuffer();
