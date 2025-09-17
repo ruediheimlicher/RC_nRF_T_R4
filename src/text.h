@@ -59,14 +59,14 @@ const char *SettingTable[]  = {menutitel, model, setting, kanal,  mix, zuteilung
 
 const char level[]  = "Level";
 const char expo[]  = "Expo";
-const char richtung[]  = "Ri:";
+const char richtung[]  = "Ri";
 const char trim[]  = "Trim";
 
-//const char seitea[]  = "A:";
-//const char seiteb[]  = "B:";
-const char typ[]  = "Typ:";
+const char seitea[]  = "AAA";
+const char seiteb[]  = "BBB";
+const char typ[]  = "CCC";
 
-const char *AktionTable[]  = { level, expo, trim, richtung};
+const char *AktionTable[]  = { level, expo, trim, richtung, seitea, seiteb, typ};
 
 
 

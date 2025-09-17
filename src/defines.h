@@ -65,11 +65,15 @@
 #define TASTE_ON  1
 
 // Display
+
+#define DISPLAY_H             64
+#define DISPLAY_B             128
+
 #define HOMESCREEN      0
 #define MODELLSCREEN    1 // SYMPEL, TROTTLE ...
 #define FUNKTIONSCREEN  2 // YAW,PITCH ...
 #define AKTIONSCREEN    3 // LEVEL, EXPO ...
-#define ANZ_AKTION      4
+#define ANZ_AKTION      7
 
 
 #define MODUSSCREEN     5

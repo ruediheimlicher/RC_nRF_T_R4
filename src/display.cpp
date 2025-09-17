@@ -36,10 +36,11 @@ extern uint8_t                   curr_steuerstatus;
 extern uint16_t                  blink_cursorpos;
 extern uint8_t                   blinkstatus;
 extern uint8_t                   calibstatus;
-extern uint8_t                   scrollpos;
+extern int16_t                   scrollpos;
 extern uint8_t                   zeilenabstand;
 
-
+#define DISPLAY_H             64
+#define DISPLAY_B             128
 
 #define BLINKPFEILUP    0
 #define BLINKPFEILDOWN    1
@@ -202,6 +203,7 @@ void oled_batteriebalken_setwert(uint8_t x,uint8_t y, uint8_t b, uint8_t h,uint1
 
 void oled_setBatterieWert(uint8_t x,uint8_t y, uint8_t b, uint8_t h,float wert)
 {
+
       u8g2.setCursor(x,y);
       u8g2.setDrawColor(0);
       u8g2.print(wert,1);
@@ -251,11 +253,11 @@ void resetRegister(void)
 void setHomeScreen()
 {
    u8g2.clear();
-   u8g2.setFont(u8g2_font_t0_18_mr);  
-   u8g2.setCursor(TAB0, 14);
+   u8g2.setFont(u8g2_font_t0_22_mr);  
+   u8g2.setCursor(TAB0, 16);
    //u8g2.print(F("nRF24 T"));
    u8g2.print(ModelTable[curr_model]);
-   u8g2.setFont(u8g2_font_t0_18_mr);  
+   u8g2.setFont(u8g2_font_t0_15_mr);  
    oled_vertikalbalken(BATTX,BATTY,BATTB,BATTH);
    u8g2.sendBuffer();
    curr_cursorspalte = 0;
@@ -298,7 +300,7 @@ void updateHomeScreen()
       //savestatus = 0xFF;
       
       
-      u8g2.sendBuffer();
+      //u8g2.sendBuffer();
 
    
    }
@@ -306,7 +308,7 @@ void updateHomeScreen()
    {
       
       u8g2.setDrawColor(0);
-      u8g2.drawBox(4,44,80,16);
+      u8g2.drawBox(4,46,80,18);
       u8g2.setDrawColor(1);
       u8g2.sendBuffer();
       savestatus = 1;
@@ -318,30 +320,32 @@ void updateHomeScreen()
       //u8g2.setCursor(4,30);
       //u8g2.print(data.yaw);
       sprintf(buf0, "%3d", data.yaw);
-      u8g2.drawStr(TAB0,32,buf0);
+      u8g2.drawStr(TAB0,36,buf0);
       
       // Pitch
      // u8g2.setCursor(36,30);
      // u8g2.print(data.pitch);
       sprintf(buf0, "%3d", data.pitch);
-      u8g2.drawStr(30,32,buf0);
+      u8g2.drawStr(30,36,buf0);
 
       // Roll
       //u8g2.setCursor(4,46);
       //u8g2.print(data.roll);
       sprintf(buf0, "%3d", data.roll);
-      u8g2.drawStr(TAB0,44,buf0);
+      u8g2.drawStr(TAB0,48,buf0);
       
       // Throttle
       //u8g2.setCursor(36,46);
       //u8g2.print(data.throttle);
       sprintf(buf0, "%3d", data.throttle);
-      u8g2.drawStr(30,44,buf0);
+      u8g2.drawStr(30,48,buf0);
      
       uint8_t p = curr_model;
    oled_batteriebalken_setwert(BATTX,BATTY,BATTB,BATTH,batterieanzeige);
+   u8g2.setFont(u8g2_font_t0_14_mr);  
    oled_setBatterieWert(BATTX,BATTY+BATTH+18,BATTB,26,UBatt);
-   //u8g2.sendBuffer();
+   u8g2.setFont(u8g2_font_t0_15_mr);  
+   //
    uint8_t la = kanalsettingarray[0][0][1] & 0x07;
    uint8_t  lb = (kanalsettingarray[0][0][1] & 0x70)>>4;
 
@@ -351,8 +355,9 @@ void updateHomeScreen()
    //u8g2.print(lb);
 
 
-   u8g2.setCursor(44,56);
+   //u8g2.setCursor(44,56);
    //u8g2.print(kanalsettingarray[0][0][2]);
+   u8g2.sendBuffer();
 }
 
 void setMenuScreen()
@@ -449,7 +454,7 @@ void updateModellScreen(void)
 {
    char_y = 4;
    uint8_t i = 0;
-   u8g2.setFont(u8g2_font_t0_14_mr);  
+   u8g2.setFont(u8g2_font_t0_15_mr);  
    charh = u8g2.getMaxCharHeight()-1;
    char_x = 48;
    while (char_y < 64)
@@ -523,10 +528,16 @@ void updateFunktionScreen()
    uint8_t expoU = expo & 0x0F;
    
    u8g2.setDrawColor(1);
-
+   u8g2.clearBuffer();
    for (uint8_t i=0;i<ANZ_AKTION;i++)
    {
-      char_y = i *  FUNKTION_ZEILENABSTAND + offsetoben;
+      if(i *  FUNKTION_ZEILENABSTAND + offsetoben < scrollpos)
+      {
+         continue;
+      }
+
+
+      char_y = i *  FUNKTION_ZEILENABSTAND + offsetoben - scrollpos;
       
       u8g2.drawStr(char_x+2,char_y + charh, AktionTable[i]);
 
@@ -687,7 +698,7 @@ void updateFunktionScreen_a()
          }break;
       }// switch curr_cursorspalte
 
-      char_y += zeilenabstand;
+      //char_y += zeilenabstand;
       fkt++;
       i++;
    }
@@ -947,9 +958,9 @@ void refreshScreen(void)
    {
       case 0:
       {
-         u8g2.setDrawColor(0);
-         u8g2.drawBox(60,3,44,12);
-         u8g2.setDrawColor(1);
+         //u8g2.setDrawColor(0);
+         //u8g2.drawBox(60,13,44,12);
+         //u8g2.setDrawColor(1);
          char buf[6];
          if(stopsekunde < 10)
          {
@@ -960,20 +971,20 @@ void refreshScreen(void)
             sprintf(buf, "%2d:%2d",stopminute,stopsekunde);
          }
          
-         u8g2.drawStr(60,14,buf);
+         u8g2.drawStr(60,34,buf);
 
          //u8g2.setCursor(62,28);
          //u8g2.print(throttlecounter);
 
          //sprintf(buf,"%1.0F", throttlesekunden);
 
-         u8g2.setCursor(62,44);
+         u8g2.setCursor(62,48);
          u8g2.print("T:");
          sprintf(buf, "%3d",throttlesekunden);
          u8g2.setDrawColor(0);
-         u8g2.drawBox(76,34,26,12);
+         u8g2.drawBox(76,36,26,12);
          u8g2.setDrawColor(1);
-         u8g2.drawStr(76,44,buf);
+         u8g2.drawStr(76,48,buf);
          //u8g2.setCursor(84,44);
         // u8g2.print(throttlesekunden);
 

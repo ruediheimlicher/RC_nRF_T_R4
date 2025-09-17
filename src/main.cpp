@@ -509,7 +509,7 @@ void tastenfunktion(uint16_t Tastenwert)
          //tastaturstatus |= (1<<TASTE_OK);
          if (!(tastaturstatus & (1<<TASTE_OK))) // Taste noch nicht gedrueckt
          {
-            Serial.print("Taste down ");
+            //Serial.print("Taste down ");
             //Serial.println(Tastenwert);
             //Taste = 0;
             
@@ -519,11 +519,12 @@ void tastenfunktion(uint16_t Tastenwert)
             tastendelaycounter = TASTENDELAY;
             
             Taste= Joystick_Tastenwahl(Tastenwert);
+            /*
             Serial.print("\ntastenfunktion Tastenwert: ");
             Serial.print(Tastenwert);
             Serial.print("\t Taste: ");
             Serial.println(Taste);
-            
+            */
             tastaturstatus |= (1<<AKTION_OK);
             if(OLED && Taste) // Taste und Tastenwert anzeigen
             {
@@ -551,13 +552,13 @@ void tastenfunktion(uint16_t Tastenwert)
              tastaturstatus |= (1<<AKTION_OK);
              if(OLED && Taste) // Taste und Tastenwert anzeigen
              {
-             oled_delete(0,62,40);
-             u8g2.setCursor(0,62);
+             //oled_delete(0,62,40);
+             //u8g2.setCursor(0,62);
              //u8g2.print(tastaturwert);
-             u8g2.print("T ");
-             u8g2.print(Taste);
+             //u8g2.print("T ");
+             //u8g2.print(Taste);
              
-             u8g2.sendBuffer(); 
+             //u8g2.sendBuffer(); 
              
              }
              
@@ -1044,7 +1045,7 @@ void loop()
             //Serial.print("T 2");
             if (tastaturstatus & (1<<AKTION_OK))
             {
-               Serial.print("T 2 up*");
+               //Serial.print("T 2 up*");
                tastaturstatus &=  ~(1<<AKTION_OK);
                tastaturstatus |= (1<<UPDATE_OK);
                switch (curr_screen)
@@ -1071,7 +1072,7 @@ void loop()
                         u8g2.sendBuffer();
                      }
                   }break;
-                  case 3: //FUNKTIONSCREEN
+                  case 3: // T2 FUNKTIONSCREEN UP
                   {
                      switch (curr_cursorspalte)
                      {
@@ -1080,16 +1081,23 @@ void loop()
                            if(curr_aktion)
                            {
                               curr_aktion--;
-                                                      
-                              if(curr_aktion)
+                              Serial.print("T2 FUNKTIONSCREEN UP curr_aktion: ");         
+                              Serial.print(curr_aktion);
+                              Serial.print("\t");     
+                              Serial.print("scrollpos vor: ");
+                              Serial.print(scrollpos);
+                              Serial.print("\t");                         
+                              if(scrollpos - ((curr_aktion ) * FUNKTION_ZEILENABSTAND ) > 0)
                               {
-                                  //scrollpos -= FUNKTION_ZEILENABSTAND;
+                                 {
+                                    scrollpos -= FUNKTION_ZEILENABSTAND;
+                                 }
+                                 
                                  
                               }
-   
-                              
-
-                              //scrollpos -= FUNKTION_ZEILENABSTAND;
+                              Serial.print(" scrollpos nach: ");
+                              Serial.print(scrollpos);
+                              Serial.print("\n");
                               updateFunktionScreen();
                               u8g2.sendBuffer();
                            }
@@ -1589,10 +1597,10 @@ void loop()
             
          case 8:
          {
-            Serial.print("T 8");
+            //Serial.print("T 8");
             if (tastaturstatus & (1<<AKTION_OK))
             {
-               Serial.print("T 8 down");
+               //Serial.print("T 8 down");
                tastaturstatus &=  ~(1<<AKTION_OK);
                tastaturstatus |= (1<<UPDATE_OK);
                switch (curr_screen)
@@ -1621,19 +1629,37 @@ void loop()
                      }
                   }break;
                      
-                  case 3:  // FUNKTIONSCREEN 
+                  case 3:  // T8 FUNKTIONSCREEN  DOWN);
                   {
-                     if(curr_aktion < 4)
+                     if(curr_aktion < ANZ_AKTION-1)
                      {
                         curr_aktion++;
-                        if(curr_aktion < 4)
+                        Serial.print("T8 FUNKTIONSCREEN  DOWN curr_aktion: ");
+                        Serial.print(curr_aktion);
+                        Serial.print("\t");  
+                        Serial.print("scrollpos vor: ");   
+                        Serial.print(scrollpos);
+                        Serial.print("\t");
+                        
+                        if( ((curr_aktion ) * FUNKTION_ZEILENABSTAND) > DISPLAY_H )
                         {
-                           //scrollpos += FUNKTION_ZEILENABSTAND;
+                           if(curr_aktion < ANZ_AKTION )
+                           {
+                              scrollpos += FUNKTION_ZEILENABSTAND;
+                           }
+                           
+                           
                                  
                         }
-                        //scrollpos += FUNKTION_ZEILENABSTAND;
+                        Serial.print(" scrollpos nach: ");
+                        Serial.print(scrollpos);
+                        Serial.print("\n");
                         updateFunktionScreen();
                         u8g2.sendBuffer();
+                     }
+                     else 
+                     {
+                        Serial.print(" last curr_aktion ");
                      }
                   }break;
                      
@@ -1770,12 +1796,12 @@ void loop()
                {
                   Serial.print(" savestatus: ");  
                   Serial.print(savestatus);
-                  //Serial.print(" curr_cursorspalte: "); 
+                  Serial.print(" curr_cursorspalte: "); 
                   Serial.print("\t") ;
                   Serial.print(curr_cursorspalte);
                   switch (savestatus)
                   {
-                     case 0: // CHANGED
+                     case 2: // CHANGED
                      {
                         // write to eeprom
                         eepromwrite();
